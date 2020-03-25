@@ -13,6 +13,14 @@ test.o: test.cpp
 
 ######################################################
 
+galerkin_mat_test: galerkin_mat_test.o
+	$(GCC) galerkin_mat_test.o -o galerkin_mat_test
+
+galerkin_mat_test.o: galerkin_mat_test.cpp
+	$(GCC) $(INCLUDE) -c galerkin_mat_test.cpp -o galerkin_mat_test.o
+
+######################################################
+
 test2D: test2D.o
 	$(GCC) test2D.o -o test2D
 
