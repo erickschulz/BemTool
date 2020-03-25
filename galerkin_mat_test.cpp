@@ -28,10 +28,17 @@ int main(int argc, char* argv[]){
 
   // Defining the operator type (Laplacian double layer 2d)
   // P1XP1 most probably means trial and test spaces as seen in a few lines
-  typedef LA_DL_2D_P1xP1 OperatorType;
-  typedef LA_SL_2D_P0xP0 Voperator;
-  typedef LA_DL_2D_P0xP1 Koperator;
+  typedef HE_SL_2D_P0xP0 Voperator;
+
+
+  typedef HE_DL_2D_P0xP1 Koperator;
   typedef CST_1D_P0xP1 Moperator;
+
+
+    //typedef LA_DL_2D_P1xP0 Koperator;
+    //typedef CST_1D_P1xP0 Moperator;
+
+
 
   // Defining the BIO based on the operator type
   //BIOp<OperatorType> V(mesh,mesh,kappa);
@@ -110,16 +117,18 @@ int main(int argc, char* argv[]){
   for(int j=0; j<nb_dof0; j++){
     bar++;
     for(int k=0; k<nb_dof1; k++){
-      K(j,k) += KK(dof0.ToElt(j),dof1.ToElt(k)); // dof to elt represents global to local map?
-    }
+        K(j,k) += KK(dof0.ToElt(j),dof1.ToElt(k));
+        //K(j,k) += KK(dof1.ToElt(j),dof0.ToElt(k));
   }
+}
   bar1.end();
 
   progress bar2("Assemblage M",nb_dof0);
   for(int j=0; j<nb_dof0; j++){
     bar++;
     for(int k=0; k<nb_dof1; k++){
-      M(j,k) += MM(dof0.ToElt(j),dof1.ToElt(k)); // dof to elt represents global to local map?
+      M(j,k) += MM(dof0.ToElt(j),dof1.ToElt(k));
+      //M(j,k) += MM(dof1.ToElt(j),dof0.ToElt(k));
     }
   }
   bar2.end();
@@ -138,7 +147,28 @@ int main(int argc, char* argv[]){
   //std::cout << abs(sum) << " %" << std::endl;
   std::cout << 100*sqrt( abs(sum - refsol)/abs(refsol) )<< " %" << std::endl;*/
 
+  Eigen::VectorXd g_N = Eigen::VectorXd::Constant(nb_dof1,5);
+
+  Eigen::MatrixXd V1(nb_dof0,nb_dof0);
+  Eigen::MatrixXd K1(nb_dof0,nb_dof1);
+  Eigen::MatrixXd M1(nb_dof0,nb_dof1);
+
   // Need the vector representing the dirichlet boundary condition!
-  Eigen::VectorXd g_N = Eigen::VectorXd::Constant(nb_dof1,0);
+  for (int i = 0 ; i < nb_dof0 ; ++i) {
+    for (int j = 0 ; j < nb_dof0 ; ++j) {
+      V1(i,j) = V(i,j).real();
+    }
+  }
+
+  for (int i = 0 ; i < nb_dof0 ; ++i) {
+    for (int j = 0 ; j < nb_dof1 ; ++j) {
+      K1(i,j) = K(i,j).real();
+      M1(i,j) = M(i,j).real();
+    }
+  }
+
+
+  Eigen::VectorXd Neumann_trace = V1.lu().solve((0.5*M1+K1)*g_N);
+  std::cout << "Neumann trace evaluated \n" << Neumann_trace << std::endl;
 
 }

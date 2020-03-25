@@ -46,6 +46,7 @@ int main(int argc, char* argv[]){
   // Looping over the number of elements to fill En vector
   for(int j=0; j<nb_elt; j++){
     const N2&         jdof = dof[j];
+    // Point in 2D
     const array<2,R3> xdof = dof(j);
     for(int k=0; k<2; k++){
       En[jdof[k]] = pow( xdof[k][0]+iu*xdof[k][1], n);}
@@ -61,7 +62,7 @@ int main(int argc, char* argv[]){
   }
   */
 
-  // Assembly of the Galerkin matrix? 
+  // Assembly of the Galerkin matrix?
   progress bar("Assemblage",nb_dof);
   for(int j=0; j<nb_dof; j++){
     bar++;
