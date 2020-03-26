@@ -17,7 +17,7 @@ int main(int argc, char* argv[]){
   Real kappa2 = kappa*kappa;
 
   // Loading the nodes into the geometry object? This is how to read .msh files
-  Geometry node("mesh/circle.msh");
+  Geometry node("mesh/quarterunitquarebdy.msh");
   // Mesh1D object mesh? loading the node into the mesh?
   Mesh1D mesh; mesh.Load(node,1);
   // Orienting the mesh
@@ -28,15 +28,13 @@ int main(int argc, char* argv[]){
 
   // Defining the operator type (Laplacian double layer 2d)
   // P1XP1 most probably means trial and test spaces as seen in a few lines
-  typedef HE_SL_2D_P0xP0 Voperator;
+  typedef LA_SL_2D_P0xP0 Voperator;
+  //typedef LA_DL_2D_P0xP1 Koperator;
+  //typedef CST_1D_P0xP1 Moperator;
 
 
-  typedef HE_DL_2D_P0xP1 Koperator;
-  typedef CST_1D_P0xP1 Moperator;
-
-
-    //typedef LA_DL_2D_P1xP0 Koperator;
-    //typedef CST_1D_P1xP0 Moperator;
+  typedef LA_DL_2D_P1xP0 Koperator;
+  typedef CST_1D_P1xP0 Moperator;
 
 
 
@@ -117,8 +115,8 @@ int main(int argc, char* argv[]){
   for(int j=0; j<nb_dof0; j++){
     bar++;
     for(int k=0; k<nb_dof1; k++){
-        K(j,k) += KK(dof0.ToElt(j),dof1.ToElt(k));
-        //K(j,k) += KK(dof1.ToElt(j),dof0.ToElt(k));
+        //K(j,k) += KK(dof0.ToElt(j),dof1.ToElt(k));
+        K(j,k) += KK(dof1.ToElt(j),dof0.ToElt(k));
   }
 }
   bar1.end();
@@ -127,8 +125,8 @@ int main(int argc, char* argv[]){
   for(int j=0; j<nb_dof0; j++){
     bar++;
     for(int k=0; k<nb_dof1; k++){
-      M(j,k) += MM(dof0.ToElt(j),dof1.ToElt(k));
-      //M(j,k) += MM(dof1.ToElt(j),dof0.ToElt(k));
+      //M(j,k) += MM(dof0.ToElt(j),dof1.ToElt(k));
+      M(j,k) += MM(dof1.ToElt(j),dof0.ToElt(k));
     }
   }
   bar2.end();
@@ -147,7 +145,7 @@ int main(int argc, char* argv[]){
   //std::cout << abs(sum) << " %" << std::endl;
   std::cout << 100*sqrt( abs(sum - refsol)/abs(refsol) )<< " %" << std::endl;*/
 
-  Eigen::VectorXd g_N = Eigen::VectorXd::Constant(nb_dof1,5);
+  Eigen::VectorXd g_N = Eigen::VectorXd::Constant(nb_dof1,1);
 
   Eigen::MatrixXd V1(nb_dof0,nb_dof0);
   Eigen::MatrixXd K1(nb_dof0,nb_dof1);
@@ -166,6 +164,8 @@ int main(int argc, char* argv[]){
       M1(i,j) = M(i,j).real();
     }
   }
+
+  //Eigen::MatrixXd test = V.Real();
 
 
   Eigen::VectorXd Neumann_trace = V1.lu().solve((0.5*M1+K1)*g_N);
